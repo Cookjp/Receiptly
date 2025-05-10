@@ -60,7 +60,7 @@ export default function SplitResultPage() {
           <h1 className="text-2xl font-bold">Split Results</h1>
         </div>
         <p className="text-sm text-gray-500 mt-2">
-          Here's how much each person owes
+          Here&apos;s how much each person owes
         </p>
       </header>
       
@@ -100,7 +100,7 @@ export default function SplitResultPage() {
           {activeSplit && (
             <div className="border border-black/[.08] dark:border-white/[.08] rounded-lg">
               <div className="border-b border-black/[.08] dark:border-white/[.08] p-4 flex justify-between items-center">
-                <h3 className="font-medium">{activeSplit.person.name}'s breakdown</h3>
+                <h3 className="font-medium">{activeSplit.person.name}&apos;s breakdown</h3>
                 <div className="text-lg font-[family-name:var(--font-geist-mono)] font-bold">
                   {formatCurrency(activeSplit.total)}
                 </div>

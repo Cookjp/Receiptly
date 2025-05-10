@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useReceipt, Person } from '@/contexts/ReceiptContext';
+import { useReceipt } from '@/contexts/ReceiptContext';
 import Link from 'next/link';
 
 export default function SplitReceiptPage() {
@@ -81,7 +81,7 @@ export default function SplitReceiptPage() {
           </div>
           
           <div className="mb-6">
-            <label className="block text-sm font-medium mb-2">Who's splitting this receipt?</label>
+            <label className="block text-sm font-medium mb-2">Who&apos;s splitting this receipt?</label>
             
             <div className="space-y-2">
               {people.map((person) => (

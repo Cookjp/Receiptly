@@ -88,6 +88,8 @@ Open http://localhost:3000 with your browser to see the application.
 
     Handle different languages with Tesseract
 
+    Send Payment links using Monzo
+
 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.

@@ -7,6 +7,47 @@ import { ReceiptData, LineItem } from '@/services/receiptParser/ReceiptParserSer
 import { ValidationService, ValidationIssue } from '@/services/validation/ValidationService';
 import { useReceipt } from '@/contexts/ReceiptContext';
 
+// interface QuantityField { 
+//   type: 'quantity';
+//   value: number;
+// }
+
+// interface UnitPriceField { 
+//   type: 'unitPrice';
+//   value: number;
+// }
+
+// interface TotalPriceField { 
+//   type: 'totalPrice';
+//   value: number;
+// }
+
+// interface DescriptionField { 
+//   type: 'description';
+//   value: string;
+// }
+
+// interface SubtotalField { 
+//   type: 'subtotal';
+//   value: number;
+// }
+
+// interface TaxField { 
+//   type: 'tax';
+//   value: number;
+// }
+
+// interface ServiceChargeField { 
+//   type: 'serviceCharge';
+//   value: number;
+// }
+
+// interface TotalField { 
+//   type: 'total';
+//   value: number;
+// }
+
+// type Field =  QuantityField | UnitPriceField | TotalPriceField | DescriptionField | SubtotalField | TaxField | ServiceChargeField | TotalField;
 
 interface ReceiptResultsProps {
   result: OcrResult | null;
@@ -65,6 +106,7 @@ const ReceiptResults: React.FC<ReceiptResultsProps> = ({
     return null;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleItemChange = (index: number, field: keyof LineItem, value: any) => {
     if (!editedReceipt) return;
     
@@ -108,6 +150,7 @@ const ReceiptResults: React.FC<ReceiptResultsProps> = ({
     });
   };
   
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleHeaderChange = (field: keyof ReceiptData, value: any) => {
     if (!editedReceipt) return;
     
@@ -233,8 +276,10 @@ const ReceiptResults: React.FC<ReceiptResultsProps> = ({
     className = "",
     field = ""
   }: { 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     value: any; 
     isEditing: boolean; 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     onChange: (value: any) => void; 
     onEditStart: () => void; 
     onEditEnd: () => void; 

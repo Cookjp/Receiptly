@@ -75,7 +75,7 @@ export default function SplitItemsPage() {
           <h1 className="text-2xl font-bold">Assign Items</h1>
         </div>
         <p className="text-sm text-gray-500 mt-2">
-          Select who's paying for each item
+          Select who&apos;s paying for each item
         </p>
       </header>
       
