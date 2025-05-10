@@ -130,7 +130,7 @@ export default function SplitReceiptPage() {
           </div>
           
           <div className="flex justify-between items-center mt-8">
-            <Link href="/" className="text-blue-600 dark:text-blue-400 hover:underline">
+            <Link href="/receipt" className="text-blue-600 dark:text-blue-400 hover:underline">
               ← Back to scanning
             </Link>
             
