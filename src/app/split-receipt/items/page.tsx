@@ -62,14 +62,14 @@ export default function SplitItemsPage() {
 
   if (!receipt || people.length === 0) {
     return (
-      <div className="grid place-items-center min-h-screen">
+      <div className="grid place-items-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-foreground"></div>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-rows-[auto_1fr_auto] min-h-screen p-8 sm:p-20 font-[family-name:var(--font-geist-sans)]">
+    <div className="grid grid-rows-[auto_1fr_auto]  font-[family-name:var(--font-geist-sans)]">
       <header className="w-full max-w-3xl mx-auto">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Assign Items</h1>

@@ -54,14 +54,14 @@ export default function SplitReceiptPage() {
 
   if (!receipt) {
     return (
-      <div className="grid place-items-center min-h-screen">
+      <div className="grid place-items-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-foreground"></div>
       </div>
     );
   }
 
   return (
-    <div className="grid grid-rows-[auto_1fr_auto] min-h-screen p-8 sm:p-20 font-[family-name:var(--font-geist-sans)]">
+    <div className="grid grid-rows-[auto_1fr_auto] font-[family-name:var(--font-geist-sans)]">
       <header className="w-full max-w-2xl mx-auto">
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold">Split Receipt</h1>
@@ -73,11 +73,11 @@ export default function SplitReceiptPage() {
       
       <main className="w-full max-w-2xl mx-auto my-8">
         <div className="bg-white dark:bg-black/[.3] p-6 rounded-lg border border-black/[.08] dark:border-white/[.08]">
-          <h2 className="text-lg font-semibold mb-4">Receipt from {receipt.establishmentName || 'Unknown'}</h2>
+          <h2 className="text-lg font-semibold mb-4">{receipt.establishmentName && `Receipt from ${receipt.establishmentName}`}</h2>
           
           <div className="mb-6">
             <p className="text-sm text-gray-500 mb-2">Total Amount: <span className="font-[family-name:var(--font-geist-mono)] font-semibold text-black dark:text-white">${(receipt.total || 0).toFixed(2)}</span></p>
-            <p className="text-sm text-gray-500">Date: {receipt.date || 'Unknown'}</p>
+            <p className="text-sm text-gray-500">{receipt.date && 'Date: ' + receipt.date}</p>
           </div>
           
           <div className="mb-6">

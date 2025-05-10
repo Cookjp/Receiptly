@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import ImageCapture from '@/components/ImageCapture';
 import ReceiptResults from '@/components/ReceiptResults';
 import { OcrServiceFactory } from '@/services/ocr/OcrServiceFactory';
@@ -34,24 +33,7 @@ export default function Home() {
   };
 
   return (
-    <div className="grid grid-rows-[auto_1fr_auto] items-center justify-items-center min-h-screen p-8 pb-20 gap-8 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <header className="w-full max-w-2xl">
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold">Receiptly</h1>
-          <Image
-            className="dark:invert"
-            src="/next.svg"
-            alt="Next.js logo"
-            width={80}
-            height={20}
-            priority
-          />
-        </div>
-        <p className="text-sm text-gray-500 mt-2">
-          Scan and process your receipts with ease
-        </p>
-      </header>
-      
+    <div className="grid grid-rows-[auto_1fr_auto] items-center justify-items-center pb-20 gap-8  font-[family-name:var(--font-geist-sans)]">
       <main className="flex flex-col gap-8 w-full max-w-2xl items-center">
         {!imageData ? (
           <ImageCapture onCapture={processImage} />
