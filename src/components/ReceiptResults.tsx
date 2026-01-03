@@ -266,40 +266,64 @@ const ReceiptResults: React.FC<ReceiptResultsProps> = ({
     }
   };
   
-  const EditableCell = ({ 
-    value, 
-    isEditing, 
-    onChange, 
-    onEditStart, 
-    onEditEnd, 
+  const EditableCell = ({
+    value,
+    isEditing,
+    onChange,
+    onEditStart,
+    onEditEnd,
     isNumber = false,
     className = "",
     field = ""
-  }: { 
+  }: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    value: any; 
-    isEditing: boolean; 
+    value: any;
+    isEditing: boolean;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onChange: (value: any) => void; 
-    onEditStart: () => void; 
-    onEditEnd: () => void; 
-    isNumber?: boolean; 
+    onChange: (value: any) => void;
+    onEditStart: () => void;
+    onEditEnd: () => void;
+    isNumber?: boolean;
     className?: string;
     field?: string;
   }) => {
+    const [localValue, setLocalValue] = useState(value !== undefined ? String(value) : '');
     const issue = field ? getIssueForField(field) : undefined;
-    
+
+    // Sync local value when editing starts or value changes from outside
+    useEffect(() => {
+      if (isEditing) {
+        setLocalValue(value !== undefined ? String(value) : '');
+      }
+    }, [isEditing, value]);
+
+    const handleBlur = () => {
+      if (isNumber) {
+        onChange(parseStringToNumber(localValue));
+      } else {
+        onChange(localValue);
+      }
+      onEditEnd();
+    };
+
+    const handleKeyDown = (e: React.KeyboardEvent) => {
+      if (e.key === 'Enter') {
+        handleBlur();
+      }
+      if (e.key === 'Escape') {
+        setLocalValue(value !== undefined ? String(value) : '');
+        onEditEnd();
+      }
+    };
+
     if (isEditing) {
       return (
         <input
           type={isNumber ? "number" : "text"}
-          value={value !== undefined ? value : ''}
-          onChange={(e) => onChange(isNumber ? parseStringToNumber(e.target.value) : e.target.value)}
-          onBlur={onEditEnd}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') onEditEnd();
-            if (e.key === 'Escape') onEditEnd();
-          }}
+          value={localValue}
+          onChange={(e) => setLocalValue(e.target.value)}
+          onBlur={handleBlur}
+          onKeyDown={handleKeyDown}
           autoFocus
           step={isNumber ? "0.01" : undefined}
           min={isNumber ? "0" : undefined}
