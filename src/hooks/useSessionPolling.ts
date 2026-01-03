@@ -10,23 +10,15 @@ interface UseSessionPollingOptions {
 
 export function useSessionPolling(options: UseSessionPollingOptions = {}) {
   const { interval = 2000, enabled = true } = options;
-  const { sessionId, syncSession } = useReceipt();
+  const { sessionId, syncSession, leaveSession } = useReceipt();
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
   const isVisibleRef = useRef(true);
+  const sessionIdRef = useRef(sessionId);
 
-  const startPolling = useCallback(() => {
-    if (intervalRef.current) return;
-
-    intervalRef.current = setInterval(async () => {
-      if (!isVisibleRef.current) return;
-
-      try {
-        await syncSession();
-      } catch (error) {
-        console.error('Session sync failed:', error);
-      }
-    }, interval);
-  }, [syncSession, interval]);
+  // Keep ref in sync with sessionId
+  useEffect(() => {
+    sessionIdRef.current = sessionId;
+  }, [sessionId]);
 
   const stopPolling = useCallback(() => {
     if (intervalRef.current) {
@@ -34,6 +26,29 @@ export function useSessionPolling(options: UseSessionPollingOptions = {}) {
       intervalRef.current = null;
     }
   }, []);
+
+  const startPolling = useCallback(() => {
+    if (intervalRef.current) return;
+
+    intervalRef.current = setInterval(async () => {
+      // Check current sessionId from ref, not closure
+      if (!isVisibleRef.current || !sessionIdRef.current) {
+        return;
+      }
+
+      try {
+        await syncSession();
+      } catch (error) {
+        console.error('Session sync failed:', error);
+        // Stop polling on session errors (404, expired, etc.)
+        const errorMessage = error instanceof Error ? error.message : '';
+        if (errorMessage.includes('expired') || errorMessage.includes('not found')) {
+          stopPolling();
+          leaveSession();
+        }
+      }
+    }, interval);
+  }, [syncSession, interval, stopPolling, leaveSession]);
 
   useEffect(() => {
     const handleVisibilityChange = () => {

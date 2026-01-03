@@ -14,16 +14,17 @@ const SESSION_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
 class SessionStore {
   private sessions: Map<string, SharedSession> = new Map();
-  private cleanupInterval: NodeJS.Timeout | null = null;
+  private instanceId = Math.random().toString(36).substring(7);
 
   constructor() {
-    // Run cleanup every hour
-    this.cleanupInterval = setInterval(() => this.cleanup(), 60 * 60 * 1000);
+    console.log(`[SessionStore] New instance created: ${this.instanceId}`);
   }
 
   get(id: string): SharedSession | undefined {
     const session = this.sessions.get(id);
+    console.log(`[SessionStore:${this.instanceId}] GET ${id} - found: ${!!session}, total sessions: ${this.sessions.size}`);
     if (session && Date.now() - session.createdAt > SESSION_TTL_MS) {
+      console.log(`[SessionStore:${this.instanceId}] Session ${id} expired (age: ${Date.now() - session.createdAt}ms)`);
       this.sessions.delete(id);
       return undefined;
     }
@@ -31,20 +32,13 @@ class SessionStore {
   }
 
   set(id: string, session: SharedSession): void {
+    console.log(`[SessionStore:${this.instanceId}] SET ${id}, total sessions: ${this.sessions.size + 1}`);
     this.sessions.set(id, session);
   }
 
   delete(id: string): boolean {
+    console.log(`[SessionStore:${this.instanceId}] DELETE ${id}`);
     return this.sessions.delete(id);
-  }
-
-  private cleanup(): void {
-    const now = Date.now();
-    for (const [id, session] of this.sessions.entries()) {
-      if (now - session.createdAt > SESSION_TTL_MS) {
-        this.sessions.delete(id);
-      }
-    }
   }
 }
 

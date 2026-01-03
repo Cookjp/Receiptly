@@ -230,20 +230,26 @@ export const ReceiptProvider: React.FC<{ children: ReactNode }> = ({ children })
   const syncSession = useCallback(async (): Promise<void> => {
     if (!sessionId) return;
 
-    const response = await fetch(`/api/sessions/${sessionId}`);
+    try {
+      const response = await fetch(`/api/sessions/${sessionId}`);
 
-    if (!response.ok) {
-      if (response.status === 404) {
-        setSessionId(null);
-        throw new Error('Session expired');
+      if (!response.ok) {
+        if (response.status === 404) {
+          setSessionId(null);
+          setLastSyncAt(null);
+          throw new Error('Session expired');
+        }
+        throw new Error('Failed to sync session');
       }
-      throw new Error('Failed to sync session');
-    }
 
-    const session = await response.json();
-    setAttributions(session.attributions);
-    setPeople(session.people);
-    setLastSyncAt(Date.now());
+      const session = await response.json();
+      setAttributions(session.attributions);
+      setPeople(session.people);
+      setLastSyncAt(Date.now());
+    } catch (error) {
+      // Re-throw after cleanup
+      throw error;
+    }
   }, [sessionId]);
 
   const updateSharedAttributions = useCallback(async (itemIndex: number, personIds: string[]): Promise<void> => {
