@@ -3,13 +3,18 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useReceipt, PersonSplit } from '@/contexts/ReceiptContext';
+import { useSessionPolling } from '@/hooks/useSessionPolling';
+import SharedSessionBanner from '@/components/SharedSessionBanner';
 import Link from 'next/link';
 
 export default function SplitResultPage() {
   const router = useRouter();
-  const { receipt, people, calculateSplits, clearAll } = useReceipt();
+  const { receipt, people, calculateSplits, clearAll, isSharedSession, attributions } = useReceipt();
   const [splits, setSplits] = useState<PersonSplit[]>([]);
   const [activeTab, setActiveTab] = useState<string | null>(null);
+
+  // Continue polling in shared sessions so results update live
+  useSessionPolling({ enabled: isSharedSession });
 
   useEffect(() => {
     if (!receipt) {
@@ -19,13 +24,13 @@ export default function SplitResultPage() {
     } else {
       const calculated = calculateSplits();
       setSplits(calculated);
-      
+
       // Set first person as active tab
       if (calculated.length > 0 && !activeTab) {
         setActiveTab(calculated[0].person.id);
       }
     }
-  }, [receipt, people, calculateSplits, router, activeTab]);
+  }, [receipt, people, calculateSplits, router, activeTab, attributions]);
 
   const handleStartOver = () => {
     clearAll();
@@ -65,9 +70,14 @@ export default function SplitResultPage() {
       </header>
       
       <main className="w-full max-w-3xl mx-auto my-8">
+        {isSharedSession && (
+          <div className="mb-4">
+            <SharedSessionBanner />
+          </div>
+        )}
         <div className="bg-white dark:bg-black/[.3] p-6 rounded-lg border border-black/[.08] dark:border-white/[.08]">
           <h2 className="text-lg font-semibold mb-6">
-            Receipt from {receipt.establishmentName || 'Unknown'} 
+            Receipt from {receipt.establishmentName || 'Unknown'}
             <span className="text-sm font-normal text-gray-500 ml-2">
               {receipt.date || 'Unknown'}
             </span>

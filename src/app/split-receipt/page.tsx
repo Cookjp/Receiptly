@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useReceipt } from '@/contexts/ReceiptContext';
 import Link from 'next/link';
+import ShareSessionButton from '@/components/ShareSessionButton';
 
 export default function SplitReceiptPage() {
   const router = useRouter();
@@ -129,11 +130,17 @@ export default function SplitReceiptPage() {
             )}
           </div>
           
+          {people.length > 0 && (
+            <div className="mt-6">
+              <ShareSessionButton />
+            </div>
+          )}
+
           <div className="flex justify-between items-center mt-8">
             <Link href="/receipt" className="text-blue-600 dark:text-blue-400 hover:underline">
               ← Back to scanning
             </Link>
-            
+
             <button
               onClick={handleContinue}
               className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full transition-colors flex items-center gap-2"

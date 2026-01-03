@@ -58,6 +58,11 @@ Open http://localhost:3000 with your browser to see the application.
     Tailwind CSS: For styling
 
 ## ✅ TODO
+
+    - Save state.
+    - Improve image deciphering (AI)?
+    - Shareable link for each person to tick off their items
+    - 
 ### 🔧 Bugs
 
     Fix "Split all items equally" button functionality

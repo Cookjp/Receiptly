@@ -1,48 +1,88 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useState, useEffect, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useReceipt } from '@/contexts/ReceiptContext';
+import { useSessionPolling } from '@/hooks/useSessionPolling';
+import SharedSessionBanner from '@/components/SharedSessionBanner';
 import Link from 'next/link';
 
-export default function SplitItemsPage() {
+function SplitItemsContent() {
   const router = useRouter();
-  const { receipt, people, attributeItem, getItemAttribution, isItemAttributed } = useReceipt();
+  const searchParams = useSearchParams();
+  const {
+    receipt,
+    people,
+    attributeItem,
+    getItemAttribution,
+    isItemAttributed,
+    isSharedSession,
+    joinSharedSession,
+    updateSharedAttributions,
+  } = useReceipt();
   const [validationMessage, setValidationMessage] = useState('');
+  const [isJoining, setIsJoining] = useState(false);
+  const [joinError, setJoinError] = useState<string | null>(null);
 
-  // Redirect to home if no receipt data
+  // Enable polling when in shared session
+  useSessionPolling({ enabled: isSharedSession });
+
+  // Check for session parameter and join if present
   useEffect(() => {
-    if (!receipt) {
-      router.push('/');
-    } else if (people.length === 0) {
-      router.push('/split-receipt');
+    const sessionId = searchParams.get('session');
+    if (sessionId && !isSharedSession && !isJoining) {
+      setIsJoining(true);
+      joinSharedSession(sessionId)
+        .catch((err) => {
+          setJoinError(err.message || 'Failed to join session');
+        })
+        .finally(() => {
+          setIsJoining(false);
+        });
     }
-  }, [receipt, people, router]);
+  }, [searchParams, isSharedSession, isJoining, joinSharedSession]);
 
-  const handleAttributeAll = () => {
+  // Redirect to home if no receipt data (only if not joining a session)
+  useEffect(() => {
+    if (!isJoining && !searchParams.get('session')) {
+      if (!receipt) {
+        router.push('/');
+      } else if (people.length === 0) {
+        router.push('/split-receipt');
+      }
+    }
+  }, [receipt, people, router, isJoining, searchParams]);
+
+  const handleAttributeAll = async () => {
     if (!receipt) return;
-    
+
     // Attribute all items to all people
-    receipt.items.forEach((_, index) => {
-      attributeItem(index, people.map(p => p.id));
-    });
+    const allPersonIds = people.map(p => p.id);
+    for (let index = 0; index < receipt.items.length; index++) {
+      if (isSharedSession) {
+        await updateSharedAttributions(index, allPersonIds);
+      } else {
+        attributeItem(index, allPersonIds);
+      }
+    }
   };
 
-  const handleTogglePerson = (itemIndex: number, personId: string) => {
+  const handleTogglePerson = async (itemIndex: number, personId: string) => {
     const currentAttribution = getItemAttribution(itemIndex);
-    
+    let newAttribution: string[];
+
     if (currentAttribution.includes(personId)) {
       // Remove this person
-      attributeItem(
-        itemIndex, 
-        currentAttribution.filter(id => id !== personId)
-      );
+      newAttribution = currentAttribution.filter(id => id !== personId);
     } else {
       // Add this person
-      attributeItem(
-        itemIndex,
-        [...currentAttribution, personId]
-      );
+      newAttribution = [...currentAttribution, personId];
+    }
+
+    if (isSharedSession) {
+      await updateSharedAttributions(itemIndex, newAttribution);
+    } else {
+      attributeItem(itemIndex, newAttribution);
     }
   };
 
@@ -59,6 +99,35 @@ export default function SplitItemsPage() {
     
     router.push('/split-receipt/result');
   };
+
+  if (isJoining) {
+    return (
+      <div className="grid place-items-center min-h-[50vh]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-foreground"></div>
+          <p className="text-sm text-gray-500">Joining shared session...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (joinError) {
+    return (
+      <div className="grid place-items-center min-h-[50vh]">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <div className="text-red-500 text-4xl">!</div>
+          <p className="text-lg font-medium">Failed to join session</p>
+          <p className="text-sm text-gray-500">{joinError}</p>
+          <Link
+            href="/"
+            className="mt-4 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors"
+          >
+            Start a new receipt
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   if (!receipt || people.length === 0) {
     return (
@@ -80,6 +149,11 @@ export default function SplitItemsPage() {
       </header>
       
       <main className="w-full max-w-3xl mx-auto my-8">
+        {isSharedSession && (
+          <div className="mb-4">
+            <SharedSessionBanner />
+          </div>
+        )}
         <div className="bg-white dark:bg-black/[.3] p-6 rounded-lg border border-black/[.08] dark:border-white/[.08]">
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-lg font-semibold">Items from {receipt.establishmentName || 'Unknown'}</h2>
@@ -176,5 +250,19 @@ export default function SplitItemsPage() {
         <p>Receiptly - Split bills easily</p>
       </footer>
     </div>
+  );
+}
+
+export default function SplitItemsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="grid place-items-center min-h-[50vh]">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-foreground"></div>
+        </div>
+      }
+    >
+      <SplitItemsContent />
+    </Suspense>
   );
 }

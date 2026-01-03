@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useCallback } from 'react';
 import { ReceiptData } from '@/services/receiptParser/ReceiptParserService';
 
 export interface Person {
@@ -17,15 +17,26 @@ export interface ReceiptContextType {
   receipt: ReceiptData | null;
   setReceipt: (receipt: ReceiptData | null) => void;
   people: Person[];
+  setPeople: (people: Person[]) => void;
   addPerson: (name: string) => void;
   removePerson: (id: string) => void;
   updatePerson: (id: string, name: string) => void;
   attributions: ItemAttribution[];
+  setAttributions: (attributions: ItemAttribution[]) => void;
   attributeItem: (itemIndex: number, personIds: string[]) => void;
   getItemAttribution: (itemIndex: number) => string[];
   isItemAttributed: (itemIndex: number) => boolean;
   calculateSplits: () => PersonSplit[];
   clearAll: () => void;
+  // Session-related
+  sessionId: string | null;
+  isSharedSession: boolean;
+  lastSyncAt: number | null;
+  createSharedSession: () => Promise<string>;
+  joinSharedSession: (sessionId: string) => Promise<void>;
+  updateSharedAttributions: (itemIndex: number, personIds: string[]) => Promise<void>;
+  syncSession: () => Promise<void>;
+  leaveSession: () => void;
 }
 
 export interface PersonSplit {
@@ -48,6 +59,10 @@ export const ReceiptProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [receipt, setReceipt] = useState<ReceiptData | null>(null);
   const [people, setPeople] = useState<Person[]>([]);
   const [attributions, setAttributions] = useState<ItemAttribution[]>([]);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [lastSyncAt, setLastSyncAt] = useState<number | null>(null);
+
+  const isSharedSession = sessionId !== null;
 
   const addPerson = (name: string) => {
     setPeople([...people, { id: crypto.randomUUID(), name }]);
@@ -172,7 +187,98 @@ export const ReceiptProvider: React.FC<{ children: ReactNode }> = ({ children })
     setReceipt(null);
     setPeople([]);
     setAttributions([]);
+    setSessionId(null);
+    setLastSyncAt(null);
   };
+
+  const createSharedSession = useCallback(async (): Promise<string> => {
+    if (!receipt || people.length === 0) {
+      throw new Error('Cannot create session without receipt and people');
+    }
+
+    const response = await fetch('/api/sessions', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ receipt, people }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to create session');
+    }
+
+    const data = await response.json();
+    setSessionId(data.sessionId);
+    setLastSyncAt(Date.now());
+    return data.shareUrl;
+  }, [receipt, people]);
+
+  const joinSharedSession = useCallback(async (id: string): Promise<void> => {
+    const response = await fetch(`/api/sessions/${id}`);
+
+    if (!response.ok) {
+      throw new Error('Session not found');
+    }
+
+    const session = await response.json();
+    setReceipt(session.receipt);
+    setPeople(session.people);
+    setAttributions(session.attributions);
+    setSessionId(id);
+    setLastSyncAt(Date.now());
+  }, []);
+
+  const syncSession = useCallback(async (): Promise<void> => {
+    if (!sessionId) return;
+
+    const response = await fetch(`/api/sessions/${sessionId}`);
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        setSessionId(null);
+        throw new Error('Session expired');
+      }
+      throw new Error('Failed to sync session');
+    }
+
+    const session = await response.json();
+    setAttributions(session.attributions);
+    setPeople(session.people);
+    setLastSyncAt(Date.now());
+  }, [sessionId]);
+
+  const updateSharedAttributions = useCallback(async (itemIndex: number, personIds: string[]): Promise<void> => {
+    // Update local state first (optimistic update)
+    const existingIndex = attributions.findIndex(a => a.itemIndex === itemIndex);
+    let newAttributions: ItemAttribution[];
+
+    if (existingIndex >= 0) {
+      newAttributions = [...attributions];
+      newAttributions[existingIndex] = { itemIndex, personIds };
+    } else {
+      newAttributions = [...attributions, { itemIndex, personIds }];
+    }
+    setAttributions(newAttributions);
+
+    // If in shared session, sync to server
+    if (sessionId) {
+      const response = await fetch(`/api/sessions/${sessionId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ attributions: newAttributions }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to update session');
+      }
+
+      setLastSyncAt(Date.now());
+    }
+  }, [attributions, sessionId]);
+
+  const leaveSession = useCallback(() => {
+    setSessionId(null);
+    setLastSyncAt(null);
+  }, []);
 
   return (
     <ReceiptContext.Provider
@@ -180,15 +286,25 @@ export const ReceiptProvider: React.FC<{ children: ReactNode }> = ({ children })
         receipt,
         setReceipt,
         people,
+        setPeople,
         addPerson,
         removePerson,
         updatePerson,
         attributions,
+        setAttributions,
         attributeItem,
         getItemAttribution,
         isItemAttributed,
         calculateSplits,
-        clearAll
+        clearAll,
+        sessionId,
+        isSharedSession,
+        lastSyncAt,
+        createSharedSession,
+        joinSharedSession,
+        updateSharedAttributions,
+        syncSession,
+        leaveSession,
       }}
     >
       {children}
