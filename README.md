@@ -59,10 +59,15 @@ Open http://localhost:3000 with your browser to see the application.
 
 ## ✅ TODO
 
-    - Save state.
+    - Save state. ✅
     - Improve image deciphering (AI)?
-    - Shareable link for each person to tick off their items
-    - 
+    - Shareable link for each person to tick off their items ✅
+    - Check Service Charge calculation is working
+    - Make subtotal just be the sum of items. and check that against the total
+    - Light mode support (checkboxes are hard to see)
+    - Update Receipt items and people on session (supports going back)
+    - setup CI/CD to VPS (docker-compose?)
+
 ### 🔧 Bugs
 
     Fix "Split all items equally" button functionality
