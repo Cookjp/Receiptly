@@ -154,7 +154,7 @@ const ReceiptResults: React.FC<ReceiptResultsProps> = ({
   const handleHeaderChange = (field: keyof ReceiptData, value: any) => {
     if (!editedReceipt) return;
     
-    if (field === 'subtotal' || field === 'tax' || field === 'serviceCharge' || field === 'total') {
+    if (field === 'subtotal' || field === 'serviceCharge' || field === 'total') {
       const numValue = parseFloat(value);
       setEditedReceipt({
         ...editedReceipt,
@@ -493,22 +493,6 @@ const ReceiptResults: React.FC<ReceiptResultsProps> = ({
                       isNumber={true}
                       className="text-right"
                       field="subtotal"
-                    />
-                  </td>
-                  <td></td>
-                </tr>
-                <tr>
-                  <td colSpan={3} className="py-2 px-4 text-right font-medium">Tax</td>
-                  <td className="py-2 px-4 text-right">
-                    <EditableCell 
-                      value={editedReceipt.tax} 
-                      isEditing={isEditingHeader && editingField === 'tax'} 
-                      onChange={(value) => handleHeaderChange('tax', value)} 
-                      onEditStart={() => handleHeaderEditStart('tax')} 
-                      onEditEnd={handleEditEnd}
-                      isNumber={true}
-                      className="text-right"
-                      field="tax"
                     />
                   </td>
                   <td></td>

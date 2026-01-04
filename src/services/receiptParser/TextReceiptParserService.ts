@@ -6,7 +6,6 @@ export class TextReceiptParserService implements ReceiptParserService {
     const items: LineItem[] = [];
 
     let subtotal: number | undefined;
-    let tax: number | undefined;
     let serviceCharge: number | undefined;
     let total: number | undefined;
     let establishmentName: string | undefined;
@@ -39,10 +38,6 @@ export class TextReceiptParserService implements ReceiptParserService {
       // Check for totals
       if (lowerLine.includes('subtotal') || lowerLine.includes('sub-total') || lowerLine.includes('sub total')) {
         subtotal = rawPrice;
-        continue;
-      }
-      if (lowerLine.includes('tax') || lowerLine.includes('vat') || lowerLine.includes('gst')) {
-        tax = rawPrice;
         continue;
       }
       if (lowerLine.includes('service') || lowerLine.includes('tip') || lowerLine.includes('gratuity')) {
@@ -80,7 +75,6 @@ export class TextReceiptParserService implements ReceiptParserService {
     return {
       items,
       subtotal,
-      tax,
       serviceCharge,
       total,
       establishmentName,

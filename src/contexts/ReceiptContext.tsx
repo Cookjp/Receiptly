@@ -48,7 +48,6 @@ export interface PersonSplit {
     splitters: number;
   }[];
   subtotal: number;
-  tax: number;
   serviceCharge: number;
   total: number;
 }
@@ -158,7 +157,6 @@ export const ReceiptProvider: React.FC<{ children: ReactNode }> = ({ children })
     const result: PersonSplit[] = [];
     
     const subtotal = receipt.subtotal || totalItemsAmount;
-    const tax = receipt.tax || 0;
     const serviceCharge = receipt.serviceCharge || 0;
     
     people.forEach(person => {
@@ -167,16 +165,14 @@ export const ReceiptProvider: React.FC<{ children: ReactNode }> = ({ children })
       
       // Calculate the proportion of shared costs
       const proportion = subtotal > 0 ? personData.subtotalShare / subtotal : 0;
-      const taxShare = tax * proportion;
       const serviceChargeShare = serviceCharge * proportion;
       
       result.push({
         person,
         items: personData.items,
         subtotal: personData.subtotalShare,
-        tax: taxShare,
         serviceCharge: serviceChargeShare,
-        total: personData.subtotalShare + taxShare + serviceChargeShare
+        total: personData.subtotalShare  + serviceChargeShare
       });
     });
 

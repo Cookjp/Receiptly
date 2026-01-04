@@ -8,7 +8,6 @@ export interface LineItem {
 export interface ReceiptData {
   items: LineItem[];
   subtotal?: number;
-  tax?: number;
   serviceCharge?: number;
   total?: number;
   establishmentName?: string;

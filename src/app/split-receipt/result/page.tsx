@@ -143,14 +143,6 @@ export default function SplitResultPage() {
                     </span>
                   </div>
                   
-                  {activeSplit.tax > 0 && (
-                    <div className="flex justify-between mt-2">
-                      <span>Tax</span>
-                      <span className="font-[family-name:var(--font-geist-mono)]">
-                        {formatCurrency(activeSplit.tax)}
-                      </span>
-                    </div>
-                  )}
                   
                   {activeSplit.serviceCharge > 0 && (
                     <div className="flex justify-between mt-2">

@@ -52,13 +52,11 @@ export class ValidationService {
     
     if (receipt.total !== undefined && 
         (receipt.subtotal !== undefined || 
-         receipt.tax !== undefined || 
          receipt.serviceCharge !== undefined)) {
       
       const subtotal = receipt.subtotal || 0;
-      const tax = receipt.tax || 0;
       const serviceCharge = receipt.serviceCharge || 0;
-      const calculatedTotal = subtotal + tax + serviceCharge;
+      const calculatedTotal = subtotal  + serviceCharge;
       const tolerance = 0.01; // Allow for small rounding differences
       
       if (Math.abs(calculatedTotal - receipt.total) > tolerance) {
