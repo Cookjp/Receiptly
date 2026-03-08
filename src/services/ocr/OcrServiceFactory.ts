@@ -1,9 +1,14 @@
 import { OcrService } from './OcrService';
+import { TabscannerOcrService } from './TabscannerOcrService';
 import { TesseractOcrService } from './TesseractOcrService';
 
 export class OcrServiceFactory {
+  private static useTabscanner = true; // Set to false to use Tesseract fallback
+
   static getOcrService(): OcrService {
-    // This could be based on configuration or environment variables
+    if (this.useTabscanner) {
+      return new TabscannerOcrService();
+    }
     return new TesseractOcrService();
   }
 }

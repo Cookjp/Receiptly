@@ -1,48 +1,54 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { OcrResult } from '../services/ocr/OcrService';
-import { ReceiptData, LineItem } from '@/services/receiptParser/ReceiptParserService';
-import { ValidationService, ValidationIssue } from '@/services/validation/ValidationService';
-import { useReceipt } from '@/contexts/ReceiptContext';
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { OcrResult } from "../services/ocr/OcrService";
+import {
+  ReceiptData,
+  LineItem,
+} from "@/services/receiptParser/ReceiptParserService";
+import {
+  ValidationService,
+  ValidationIssue,
+} from "@/services/validation/ValidationService";
+import { useReceipt } from "@/contexts/ReceiptContext";
 
-// interface QuantityField { 
+// interface QuantityField {
 //   type: 'quantity';
 //   value: number;
 // }
 
-// interface UnitPriceField { 
+// interface UnitPriceField {
 //   type: 'unitPrice';
 //   value: number;
 // }
 
-// interface TotalPriceField { 
+// interface TotalPriceField {
 //   type: 'totalPrice';
 //   value: number;
 // }
 
-// interface DescriptionField { 
+// interface DescriptionField {
 //   type: 'description';
 //   value: string;
 // }
 
-// interface SubtotalField { 
+// interface SubtotalField {
 //   type: 'subtotal';
 //   value: number;
 // }
 
-// interface TaxField { 
+// interface TaxField {
 //   type: 'tax';
 //   value: number;
 // }
 
-// interface ServiceChargeField { 
+// interface ServiceChargeField {
 //   type: 'serviceCharge';
 //   value: number;
 // }
 
-// interface TotalField { 
+// interface TotalField {
 //   type: 'total';
 //   value: number;
 // }
@@ -55,10 +61,10 @@ interface ReceiptResultsProps {
   isLoading: boolean;
 }
 
-const ReceiptResults: React.FC<ReceiptResultsProps> = ({ 
-  result, 
-  imagePreview, 
-  isLoading 
+const ReceiptResults: React.FC<ReceiptResultsProps> = ({
+  result,
+  imagePreview,
+  isLoading,
 }) => {
   const router = useRouter();
   const { setReceipt } = useReceipt();
@@ -67,14 +73,16 @@ const ReceiptResults: React.FC<ReceiptResultsProps> = ({
   const [editingItem, setEditingItem] = useState<number | null>(null);
   const [editingField, setEditingField] = useState<string | null>(null);
   const [isEditingHeader, setIsEditingHeader] = useState(false);
-  const [validationIssues, setValidationIssues] = useState<ValidationIssue[]>([]);
-  
+  const [validationIssues, setValidationIssues] = useState<ValidationIssue[]>(
+    [],
+  );
+
   // Sync the edited receipt with the OCR result
   useEffect(() => {
     if (result?.parsedReceipt) {
       const receiptData = JSON.parse(JSON.stringify(result.parsedReceipt));
       setEditedReceipt(receiptData);
-      
+
       // Validate the receipt
       setValidationIssues(ValidationService.validateReceipt(receiptData));
     } else {
@@ -85,19 +93,21 @@ const ReceiptResults: React.FC<ReceiptResultsProps> = ({
     setEditingField(null);
     setIsEditingHeader(false);
   }, [result]);
-  
+
   // Validate receipt whenever it changes
   useEffect(() => {
     if (editedReceipt) {
       setValidationIssues(ValidationService.validateReceipt(editedReceipt));
     }
   }, [editedReceipt]);
-  
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center gap-4 p-6">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-foreground"></div>
-        <p className="font-[family-name:var(--font-geist-mono)] text-sm">Processing receipt...</p>
+        <p className="font-[family-name:var(--font-geist-mono)] text-sm">
+          Processing receipt...
+        </p>
       </div>
     );
   }
@@ -107,165 +117,188 @@ const ReceiptResults: React.FC<ReceiptResultsProps> = ({
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleItemChange = (index: number, field: keyof LineItem, value: any) => {
+  const handleItemChange = (
+    index: number,
+    field: keyof LineItem,
+    value: any,
+  ) => {
     if (!editedReceipt) return;
-    
+
     const updatedItems = [...editedReceipt.items];
-    
+
     // Handle numeric values
-    if (field === 'quantity' || field === 'unitPrice' || field === 'totalPrice') {
+    if (
+      field === "quantity" ||
+      field === "unitPrice" ||
+      field === "totalPrice"
+    ) {
       const numValue = parseFloat(value);
       updatedItems[index] = {
         ...updatedItems[index],
-        [field]: isNaN(numValue) ? 0 : numValue
+        [field]: isNaN(numValue) ? 0 : numValue,
       };
-      
+
       // Update the total price if quantity or unit price changes
-      if (field === 'quantity' || field === 'unitPrice') {
-        const qty = field === 'quantity' ? 
-          (isNaN(numValue) ? 0 : numValue) : 
-          (updatedItems[index].quantity || 1);
-          
-        const unitPrice = field === 'unitPrice' ? 
-          (isNaN(numValue) ? 0 : numValue) : 
-          (updatedItems[index].unitPrice || 0);
-          
+      if (field === "quantity" || field === "unitPrice") {
+        const qty =
+          field === "quantity"
+            ? isNaN(numValue)
+              ? 0
+              : numValue
+            : updatedItems[index].quantity || 1;
+
+        const unitPrice =
+          field === "unitPrice"
+            ? isNaN(numValue)
+              ? 0
+              : numValue
+            : updatedItems[index].unitPrice || 0;
+
         updatedItems[index].totalPrice = qty * unitPrice;
       }
-      
+
       // Update unit price if total price and quantity changes
-      if (field === 'totalPrice' && updatedItems[index].quantity && updatedItems[index].quantity > 0) {
-        updatedItems[index].unitPrice = (isNaN(numValue) ? 0 : numValue) / updatedItems[index].quantity;
+      if (
+        field === "totalPrice" &&
+        updatedItems[index].quantity &&
+        updatedItems[index].quantity > 0
+      ) {
+        updatedItems[index].unitPrice =
+          (isNaN(numValue) ? 0 : numValue) / updatedItems[index].quantity;
       }
     } else {
       updatedItems[index] = {
         ...updatedItems[index],
-        [field]: value
+        [field]: value,
       };
     }
-    
+
     setEditedReceipt({
       ...editedReceipt,
-      items: updatedItems
+      items: updatedItems,
     });
   };
-  
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleHeaderChange = (field: keyof ReceiptData, value: any) => {
     if (!editedReceipt) return;
-    
-    if (field === 'subtotal' || field === 'serviceCharge' || field === 'total') {
+
+    if (
+      field === "subtotal" ||
+      field === "serviceCharge" ||
+      field === "total"
+    ) {
       const numValue = parseFloat(value);
       setEditedReceipt({
         ...editedReceipt,
-        [field]: isNaN(numValue) ? undefined : numValue
+        [field]: isNaN(numValue) ? undefined : numValue,
       });
     } else {
       setEditedReceipt({
         ...editedReceipt,
-        [field]: value
+        [field]: value,
       });
     }
   };
-  
+
   const handleEditStart = (index: number, field: string) => {
     setEditingItem(index);
     setEditingField(field);
     setIsEditingHeader(false);
   };
-  
+
   const handleHeaderEditStart = (field: string) => {
     setEditingItem(null);
     setEditingField(field);
     setIsEditingHeader(true);
   };
-  
+
   const handleEditEnd = () => {
     setEditingItem(null);
     setEditingField(null);
     setIsEditingHeader(false);
   };
-  
+
   const addNewItem = () => {
     if (!editedReceipt) return;
-    
+
     const newItem: LineItem = {
-      description: 'New Item',
+      description: "New Item",
       quantity: 1,
       unitPrice: 0,
-      totalPrice: 0
+      totalPrice: 0,
     };
-    
+
     setEditedReceipt({
       ...editedReceipt,
-      items: [...editedReceipt.items, newItem]
+      items: [...editedReceipt.items, newItem],
     });
-    
+
     // Start editing the description of the new item
     setTimeout(() => {
       setEditingItem(editedReceipt.items.length);
-      setEditingField('description');
+      setEditingField("description");
     }, 50);
   };
-  
+
   const deleteItem = (index: number) => {
     if (!editedReceipt) return;
-    
+
     const updatedItems = [...editedReceipt.items];
     updatedItems.splice(index, 1);
-    
+
     setEditedReceipt({
       ...editedReceipt,
-      items: updatedItems
+      items: updatedItems,
     });
   };
-  
+
   const parseStringToNumber = (value: string): number => {
-    const cleaned = value.replace(/[^0-9.]/g, '');
+    const cleaned = value.replace(/[^0-9.]/g, "");
     const parsed = parseFloat(cleaned);
     return isNaN(parsed) ? 0 : parsed;
   };
 
   const formatNumber = (value: number | undefined): string => {
-    if (value === undefined) return '-';
+    if (value === undefined) return "-";
     return value.toFixed(2);
   };
-  
+
   const fixSubtotalIssue = () => {
     if (!editedReceipt) return;
-    
-    const issue = validationIssues.find(i => i.type === 'subtotal_mismatch');
+
+    const issue = validationIssues.find((i) => i.type === "subtotal_mismatch");
     if (issue && issue.expected !== undefined) {
       setEditedReceipt({
         ...editedReceipt,
-        subtotal: issue.expected
+        subtotal: issue.expected,
       });
     }
   };
-  
+
   const fixTotalIssue = () => {
     if (!editedReceipt) return;
-    
-    const issue = validationIssues.find(i => i.type === 'total_mismatch');
+
+    const issue = validationIssues.find((i) => i.type === "total_mismatch");
     if (issue && issue.expected !== undefined) {
       setEditedReceipt({
         ...editedReceipt,
-        total: issue.expected
+        total: issue.expected,
       });
     }
   };
-  
+
   const getIssueForField = (field: string): ValidationIssue | undefined => {
-    return validationIssues.find(issue => issue.field === field);
+    return validationIssues.find((issue) => issue.field === field);
   };
 
   const handleAcceptReceipt = () => {
     if (editedReceipt) {
       setReceipt(editedReceipt);
-      router.push('/split-receipt');
+      router.push("/split-receipt");
     }
   };
-  
+
   const EditableCell = ({
     value,
     isEditing,
@@ -274,7 +307,7 @@ const ReceiptResults: React.FC<ReceiptResultsProps> = ({
     onEditEnd,
     isNumber = false,
     className = "",
-    field = ""
+    field = "",
   }: {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     value: any;
@@ -287,13 +320,15 @@ const ReceiptResults: React.FC<ReceiptResultsProps> = ({
     className?: string;
     field?: string;
   }) => {
-    const [localValue, setLocalValue] = useState(value !== undefined ? String(value) : '');
+    const [localValue, setLocalValue] = useState(
+      value !== undefined ? String(value) : "",
+    );
     const issue = field ? getIssueForField(field) : undefined;
 
     // Sync local value when editing starts or value changes from outside
     useEffect(() => {
       if (isEditing) {
-        setLocalValue(value !== undefined ? String(value) : '');
+        setLocalValue(value !== undefined ? String(value) : "");
       }
     }, [isEditing, value]);
 
@@ -307,11 +342,11 @@ const ReceiptResults: React.FC<ReceiptResultsProps> = ({
     };
 
     const handleKeyDown = (e: React.KeyboardEvent) => {
-      if (e.key === 'Enter') {
+      if (e.key === "Enter") {
         handleBlur();
       }
-      if (e.key === 'Escape') {
-        setLocalValue(value !== undefined ? String(value) : '');
+      if (e.key === "Escape") {
+        setLocalValue(value !== undefined ? String(value) : "");
         onEditEnd();
       }
     };
@@ -327,18 +362,18 @@ const ReceiptResults: React.FC<ReceiptResultsProps> = ({
           autoFocus
           step={isNumber ? "0.01" : undefined}
           min={isNumber ? "0" : undefined}
-          className={`w-full border dark:border-gray-700 bg-transparent px-2 py-1 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 ${className} ${issue ? 'border-yellow-500 dark:border-yellow-400' : ''}`}
+          className={`w-full border dark:border-gray-700 bg-transparent px-2 py-1 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 ${className} ${issue ? "border-yellow-500 dark:border-yellow-400" : ""}`}
         />
       );
     }
-    
+
     return (
-      <div 
+      <div
         onClick={onEditStart}
-        className={`cursor-pointer hover:bg-black/[.03] dark:hover:bg-white/[.03] px-2 py-1 rounded ${className} ${issue ? 'text-yellow-600 dark:text-yellow-400' : ''}`}
+        className={`cursor-pointer hover:bg-black/[.03] dark:hover:bg-white/[.03] px-2 py-1 rounded ${className} ${issue ? "text-yellow-600 dark:text-yellow-400" : ""}`}
         title={issue?.message}
       >
-        {isNumber && value !== undefined ? formatNumber(value) : (value || '-')}
+        {isNumber && value !== undefined ? formatNumber(value) : value || "-"}
         {issue && <span className="ml-1 text-yellow-500">⚠️</span>}
       </div>
     );
@@ -350,54 +385,58 @@ const ReceiptResults: React.FC<ReceiptResultsProps> = ({
         <div className="flex flex-col gap-2">
           <h3 className="text-lg font-semibold">Receipt Image</h3>
           <div className="relative border border-solid border-black/[.08] dark:border-white/[.145] rounded-lg overflow-hidden">
-            <img 
-              src={imagePreview} 
-              alt="Receipt" 
-              className="w-full object-contain max-h-[400px]" 
+            <img
+              src={imagePreview}
+              alt="Receipt"
+              className="w-full object-contain max-h-[400px]"
             />
           </div>
         </div>
       )}
-      
+
       {editedReceipt && (
         <div className="flex flex-col gap-3">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold">Receipt Details</h3>
-            <span className="text-xs text-gray-500">(Click on any value to edit)</span>
+            <span className="text-xs text-gray-500">
+              (Click on any value to edit)
+            </span>
           </div>
-          
+
           {validationIssues.length > 0 && (
             <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 p-3 rounded-lg text-sm">
               <div className="font-medium text-yellow-700 dark:text-yellow-400 mb-1">
-                Found {validationIssues.length} issue{validationIssues.length !== 1 ? 's' : ''} with this receipt:
+                Found {validationIssues.length} issue
+                {validationIssues.length !== 1 ? "s" : ""} with this receipt:
               </div>
               <ul className="list-disc pl-5 space-y-1 text-yellow-600 dark:text-yellow-300">
                 {validationIssues.map((issue, index) => (
                   <li key={index} className="flex items-center justify-between">
                     <span>{issue.message}</span>
-                    {issue.type === 'subtotal_mismatch' && issue.expected !== undefined && (
-                      <button 
-                        onClick={fixSubtotalIssue}
-                        className="text-xs bg-yellow-100 dark:bg-yellow-800 hover:bg-yellow-200 dark:hover:bg-yellow-700 text-yellow-800 dark:text-yellow-200 px-2 py-1 rounded transition-colors"
-                      >
-                        Fix (set to {formatNumber(issue.expected)})
-                      </button>
-                    )}
-                    {issue.type === 'total_mismatch' && issue.expected !== undefined && (
-                      <button 
-                        onClick={fixTotalIssue}
-                        className="text-xs bg-yellow-100 dark:bg-yellow-800 hover:bg-yellow-200 dark:hover:bg-yellow-700 text-yellow-800 dark:text-yellow-200 px-2 py-1 rounded transition-colors"
-                      >
-                        Fix (set to {formatNumber(issue.expected)})
-                      </button>
-                    )}
+                    {issue.type === "subtotal_mismatch" &&
+                      issue.expected !== undefined && (
+                        <button
+                          onClick={fixSubtotalIssue}
+                          className="text-xs bg-yellow-100 dark:bg-yellow-800 hover:bg-yellow-200 dark:hover:bg-yellow-700 text-yellow-800 dark:text-yellow-200 px-2 py-1 rounded transition-colors"
+                        >
+                          Fix (set to {formatNumber(issue.expected)})
+                        </button>
+                      )}
+                    {issue.type === "total_mismatch" &&
+                      issue.expected !== undefined && (
+                        <button
+                          onClick={fixTotalIssue}
+                          className="text-xs bg-yellow-100 dark:bg-yellow-800 hover:bg-yellow-200 dark:hover:bg-yellow-700 text-yellow-800 dark:text-yellow-200 px-2 py-1 rounded transition-colors"
+                        >
+                          Fix (set to {formatNumber(issue.expected)})
+                        </button>
+                      )}
                   </li>
                 ))}
               </ul>
             </div>
           )}
-          
-          
+
           <div className="overflow-x-auto mt-2">
             <table className="w-full border-collapse font-[family-name:var(--font-geist-mono)] text-sm">
               <thead>
@@ -411,23 +450,37 @@ const ReceiptResults: React.FC<ReceiptResultsProps> = ({
               </thead>
               <tbody>
                 {editedReceipt.items.map((item, index) => (
-                  <tr key={index} className="border-b border-black/[.04] dark:border-white/[.07]">
+                  <tr
+                    key={index}
+                    className="border-b border-black/[.04] dark:border-white/[.07]"
+                  >
                     <td className="py-2 px-4">
-                      <EditableCell 
-                        value={item.description} 
-                        isEditing={editingItem === index && editingField === 'description'} 
-                        onChange={(value) => handleItemChange(index, 'description', value)} 
-                        onEditStart={() => handleEditStart(index, 'description')} 
+                      <EditableCell
+                        value={item.description}
+                        isEditing={
+                          editingItem === index &&
+                          editingField === "description"
+                        }
+                        onChange={(value) =>
+                          handleItemChange(index, "description", value)
+                        }
+                        onEditStart={() =>
+                          handleEditStart(index, "description")
+                        }
                         onEditEnd={handleEditEnd}
                         field={`items[${index}].description`}
                       />
                     </td>
                     <td className="py-2 px-4 text-right">
-                      <EditableCell 
-                        value={item.quantity} 
-                        isEditing={editingItem === index && editingField === 'quantity'} 
-                        onChange={(value) => handleItemChange(index, 'quantity', value)} 
-                        onEditStart={() => handleEditStart(index, 'quantity')} 
+                      <EditableCell
+                        value={item.quantity}
+                        isEditing={
+                          editingItem === index && editingField === "quantity"
+                        }
+                        onChange={(value) =>
+                          handleItemChange(index, "quantity", value)
+                        }
+                        onEditStart={() => handleEditStart(index, "quantity")}
                         onEditEnd={handleEditEnd}
                         isNumber={true}
                         className="text-right"
@@ -435,11 +488,15 @@ const ReceiptResults: React.FC<ReceiptResultsProps> = ({
                       />
                     </td>
                     <td className="py-2 px-4 text-right">
-                      <EditableCell 
-                        value={item.unitPrice} 
-                        isEditing={editingItem === index && editingField === 'unitPrice'} 
-                        onChange={(value) => handleItemChange(index, 'unitPrice', value)} 
-                        onEditStart={() => handleEditStart(index, 'unitPrice')} 
+                      <EditableCell
+                        value={item.unitPrice}
+                        isEditing={
+                          editingItem === index && editingField === "unitPrice"
+                        }
+                        onChange={(value) =>
+                          handleItemChange(index, "unitPrice", value)
+                        }
+                        onEditStart={() => handleEditStart(index, "unitPrice")}
                         onEditEnd={handleEditEnd}
                         isNumber={true}
                         className="text-right"
@@ -447,11 +504,15 @@ const ReceiptResults: React.FC<ReceiptResultsProps> = ({
                       />
                     </td>
                     <td className="py-2 px-4 text-right">
-                      <EditableCell 
-                        value={item.totalPrice} 
-                        isEditing={editingItem === index && editingField === 'totalPrice'} 
-                        onChange={(value) => handleItemChange(index, 'totalPrice', value)} 
-                        onEditStart={() => handleEditStart(index, 'totalPrice')} 
+                      <EditableCell
+                        value={item.totalPrice}
+                        isEditing={
+                          editingItem === index && editingField === "totalPrice"
+                        }
+                        onChange={(value) =>
+                          handleItemChange(index, "totalPrice", value)
+                        }
+                        onEditStart={() => handleEditStart(index, "totalPrice")}
                         onEditEnd={handleEditEnd}
                         isNumber={true}
                         className="text-right"
@@ -482,13 +543,17 @@ const ReceiptResults: React.FC<ReceiptResultsProps> = ({
                   </td>
                 </tr>
                 <tr>
-                  <td colSpan={3} className="py-2 px-4 text-right font-medium">Subtotal</td>
+                  <td colSpan={3} className="py-2 px-4 text-right font-medium">
+                    Subtotal
+                  </td>
                   <td className="py-2 px-4 text-right">
-                    <EditableCell 
-                      value={editedReceipt.subtotal} 
-                      isEditing={isEditingHeader && editingField === 'subtotal'} 
-                      onChange={(value) => handleHeaderChange('subtotal', value)} 
-                      onEditStart={() => handleHeaderEditStart('subtotal')} 
+                    <EditableCell
+                      value={editedReceipt.subtotal}
+                      isEditing={isEditingHeader && editingField === "subtotal"}
+                      onChange={(value) =>
+                        handleHeaderChange("subtotal", value)
+                      }
+                      onEditStart={() => handleHeaderEditStart("subtotal")}
                       onEditEnd={handleEditEnd}
                       isNumber={true}
                       className="text-right"
@@ -498,13 +563,19 @@ const ReceiptResults: React.FC<ReceiptResultsProps> = ({
                   <td></td>
                 </tr>
                 <tr>
-                  <td colSpan={3} className="py-2 px-4 text-right font-medium">Service Charge</td>
+                  <td colSpan={3} className="py-2 px-4 text-right font-medium">
+                    Service Charge
+                  </td>
                   <td className="py-2 px-4 text-right">
-                    <EditableCell 
-                      value={editedReceipt.serviceCharge} 
-                      isEditing={isEditingHeader && editingField === 'serviceCharge'} 
-                      onChange={(value) => handleHeaderChange('serviceCharge', value)} 
-                      onEditStart={() => handleHeaderEditStart('serviceCharge')} 
+                    <EditableCell
+                      value={editedReceipt.serviceCharge}
+                      isEditing={
+                        isEditingHeader && editingField === "serviceCharge"
+                      }
+                      onChange={(value) =>
+                        handleHeaderChange("serviceCharge", value)
+                      }
+                      onEditStart={() => handleHeaderEditStart("serviceCharge")}
                       onEditEnd={handleEditEnd}
                       isNumber={true}
                       className="text-right"
@@ -514,13 +585,15 @@ const ReceiptResults: React.FC<ReceiptResultsProps> = ({
                   <td></td>
                 </tr>
                 <tr className="border-t border-black/[.08] dark:border-white/[.145]">
-                  <td colSpan={3} className="py-2 px-4 text-right font-medium">Total</td>
+                  <td colSpan={3} className="py-2 px-4 text-right font-medium">
+                    Total
+                  </td>
                   <td className="py-2 px-4 text-right font-bold">
-                    <EditableCell 
-                      value={editedReceipt.total} 
-                      isEditing={isEditingHeader && editingField === 'total'} 
-                      onChange={(value) => handleHeaderChange('total', value)} 
-                      onEditStart={() => handleHeaderEditStart('total')} 
+                    <EditableCell
+                      value={editedReceipt.total}
+                      isEditing={isEditingHeader && editingField === "total"}
+                      onChange={(value) => handleHeaderChange("total", value)}
+                      onEditStart={() => handleHeaderEditStart("total")}
                       onEditEnd={handleEditEnd}
                       isNumber={true}
                       className="text-right font-bold"
@@ -535,11 +608,23 @@ const ReceiptResults: React.FC<ReceiptResultsProps> = ({
           <div className="mt-6 flex justify-end">
             <button
               onClick={handleAcceptReceipt}
-              disabled={validationIssues.some(issue => issue.severity === 'error')}
+              disabled={validationIssues.some(
+                (issue) => issue.severity === "error",
+              )}
               className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
             >
               <span>Accept Receipt & Continue</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M5 12h14"></path>
                 <path d="m12 5 7 7-7 7"></path>
               </svg>
@@ -547,8 +632,8 @@ const ReceiptResults: React.FC<ReceiptResultsProps> = ({
           </div>
         </div>
       )}
-      
-      {result && (
+
+      {result && result.text && (
         <div className="flex flex-col gap-2">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold">Raw Extracted Text</h3>

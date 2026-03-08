@@ -7,13 +7,13 @@ export class TesseractOcrService implements OcrService {
     try {
       // Perform OCR with Tesseract
       const worker = await createWorker('eng');
-      const result = await worker.recognize(imageData, {}, {blocks: true});
+      const result = await worker.recognize(imageData, {}, { blocks: true });
       await worker.terminate();
-      
+
       // Parse the OCR text into structured receipt data
       const parserService = ReceiptParserFactory.getReceiptParserService();
       const parsedReceipt = parserService.parseReceipt(result.data.text);
-      
+
       return {
         text: result.data.text,
         confidence: result.data.confidence,

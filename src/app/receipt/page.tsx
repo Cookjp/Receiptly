@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import ReceiptResults from '@/components/ReceiptResults';
-import { OcrServiceFactory } from '@/services/ocr/OcrServiceFactory';
-import { OcrResult } from '@/services/ocr/OcrService';
-import { useReceipt } from '@/contexts/ReceiptContext';
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import ReceiptResults from "@/components/ReceiptResults";
+import { OcrServiceFactory } from "@/services/ocr/OcrServiceFactory";
+import { OcrResult } from "@/services/ocr/OcrService";
+import { useReceipt } from "@/contexts/ReceiptContext";
 
 export default function ReceiptPage() {
   const [imageData, setImageData] = useState<string | null>(null);
@@ -16,26 +16,26 @@ export default function ReceiptPage() {
 
   useEffect(() => {
     // Always try to get the image from localStorage
-    const imageFromStorage = localStorage.getItem('receiptImage');
-    
+    const imageFromStorage = localStorage.getItem("receiptImage");
+
     if (imageFromStorage) {
       setImageData(imageFromStorage);
-      
+
       // If we already have a receipt in context, create an OcrResult from it
       if (receipt && !ocrResult) {
         setOcrResult({
-          text: '', // We don't have the raw text anymore, but that's okay
+          text: "", // We don't have the raw text anymore, but that's okay
           confidence: 100, // Assuming high confidence since it's already processed
-          parsedReceipt: receipt
+          parsedReceipt: receipt,
         });
-      } 
+      }
       // Otherwise, process the image to get a new receipt
       else if (!receipt) {
         processImage(imageFromStorage);
       }
     } else if (!receipt) {
       // No image in localStorage and no receipt in context, redirect back home
-      router.push('/');
+      router.push("/");
     }
   }, [router, receipt, ocrResult]);
 
@@ -44,26 +44,26 @@ export default function ReceiptPage() {
     try {
       const ocrService = OcrServiceFactory.getOcrService();
       const result = await ocrService.processImage(imageData);
-      console.log('result', result);
+      console.log("result", result);
       setOcrResult(result);
-      
+
       // Store the parsed receipt in context
       if (result.parsedReceipt) {
         setReceipt(result.parsedReceipt);
       }
     } catch (error) {
-      console.error('Error processing receipt:', error);
-      alert('Failed to process receipt. Please try again.');
-      router.push('/');
+      console.error("Error processing receipt:", error);
+      alert("Failed to process receipt. Please try again.");
+      router.push("/");
     } finally {
       setIsProcessing(false);
     }
   };
 
   const resetState = () => {
-    localStorage.removeItem('receiptImage');
+    localStorage.removeItem("receiptImage");
     setReceipt(null); // Clear the receipt from context
-    router.push('/');
+    router.push("/");
   };
 
   return (
@@ -75,17 +75,13 @@ export default function ReceiptPage() {
         >
           Scan Another Receipt
         </button>
-        
-        <ReceiptResults 
+
+        <ReceiptResults
           result={ocrResult}
           imagePreview={imageData}
           isLoading={isProcessing}
         />
       </main>
-      
-      <footer className="flex gap-[24px] flex-wrap items-center justify-center text-sm">
-        <p>Built with Next.js and Tesseract.js</p>
-      </footer>
     </div>
   );
 }
