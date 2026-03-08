@@ -130,6 +130,7 @@ export async function POST(request: NextRequest) {
                     date: result.date,
                     address: result.address,
                     phoneNumber: result.phoneNumber,
+                    currency: result.currency,
                 };
 
                 return NextResponse.json({

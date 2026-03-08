@@ -14,6 +14,7 @@ export interface ReceiptData {
   date?: string;
   address?: string;
   phoneNumber?: string;
+  currency?: string;
 }
 
 export interface ReceiptParserService {

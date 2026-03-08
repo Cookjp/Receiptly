@@ -1,15 +1,23 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useReceipt, PersonSplit } from '@/contexts/ReceiptContext';
-import { useSessionPolling } from '@/hooks/useSessionPolling';
-import SharedSessionBanner from '@/components/SharedSessionBanner';
-import Link from 'next/link';
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useReceipt, PersonSplit } from "@/contexts/ReceiptContext";
+import { useSessionPolling } from "@/hooks/useSessionPolling";
+import SharedSessionBanner from "@/components/SharedSessionBanner";
+import Link from "next/link";
 
 export default function SplitResultPage() {
   const router = useRouter();
-  const { receipt, people, calculateSplits, clearAll, isSharedSession, attributions } = useReceipt();
+  const {
+    receipt,
+    people,
+    calculateSplits,
+    clearAll,
+    isSharedSession,
+    attributions,
+    formatCurrency,
+  } = useReceipt();
   const [splits, setSplits] = useState<PersonSplit[]>([]);
   const [activeTab, setActiveTab] = useState<string | null>(null);
 
@@ -18,9 +26,9 @@ export default function SplitResultPage() {
 
   useEffect(() => {
     if (!receipt) {
-      router.push('/');
+      router.push("/");
     } else if (people.length === 0) {
-      router.push('/split-receipt');
+      router.push("/split-receipt");
     } else {
       const calculated = calculateSplits();
       setSplits(calculated);
@@ -34,18 +42,11 @@ export default function SplitResultPage() {
 
   const handleStartOver = () => {
     clearAll();
-    router.push('/');
-  };
-
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-    }).format(amount);
+    router.push("/");
   };
 
   const getActiveSplit = (): PersonSplit | undefined => {
-    return splits.find(split => split.person.id === activeTab);
+    return splits.find((split) => split.person.id === activeTab);
   };
 
   if (!receipt || people.length === 0) {
@@ -68,7 +69,7 @@ export default function SplitResultPage() {
           Here&apos;s how much each person owes
         </p>
       </header>
-      
+
       <main className="w-full max-w-3xl mx-auto my-8">
         {isSharedSession && (
           <div className="mb-4">
@@ -77,21 +78,21 @@ export default function SplitResultPage() {
         )}
         <div className="bg-white dark:bg-black/[.3] p-6 rounded-lg border border-black/[.08] dark:border-white/[.08]">
           <h2 className="text-lg font-semibold mb-6">
-            Receipt from {receipt.establishmentName || 'Unknown'}
+            Receipt from {receipt.establishmentName || "Unknown"}
             <span className="text-sm font-normal text-gray-500 ml-2">
-              {receipt.date || 'Unknown'}
+              {receipt.date || "Unknown"}
             </span>
           </h2>
-          
+
           {/* Summary tiles for all people */}
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-8">
-            {splits.map(split => (
+            {splits.map((split) => (
               <button
                 key={split.person.id}
                 className={`p-4 rounded-lg border transition-colors ${
-                  split.person.id === activeTab 
-                    ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-400'
-                    : 'border-black/[.08] dark:border-white/[.08] hover:bg-black/[.02] dark:hover:bg-white/[.02]'
+                  split.person.id === activeTab
+                    ? "border-blue-500 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-400"
+                    : "border-black/[.08] dark:border-white/[.08] hover:bg-black/[.02] dark:hover:bg-white/[.02]"
                 }`}
                 onClick={() => setActiveTab(split.person.id)}
               >
@@ -100,22 +101,24 @@ export default function SplitResultPage() {
                   {formatCurrency(split.total)}
                 </div>
                 <div className="text-xs text-gray-500 mt-1">
-                  {split.items.length} item{split.items.length !== 1 ? 's' : ''}
+                  {split.items.length} item{split.items.length !== 1 ? "s" : ""}
                 </div>
               </button>
             ))}
           </div>
-          
+
           {/* Detailed view for selected person */}
           {activeSplit && (
             <div className="border border-black/[.08] dark:border-white/[.08] rounded-lg">
               <div className="border-b border-black/[.08] dark:border-white/[.08] p-4 flex justify-between items-center">
-                <h3 className="font-medium">{activeSplit.person.name}&apos;s breakdown</h3>
+                <h3 className="font-medium">
+                  {activeSplit.person.name}&apos;s breakdown
+                </h3>
                 <div className="text-lg font-[family-name:var(--font-geist-mono)] font-bold">
                   {formatCurrency(activeSplit.total)}
                 </div>
               </div>
-              
+
               <div className="p-4">
                 <div className="space-y-3">
                   {activeSplit.items.map((item, index) => (
@@ -124,7 +127,8 @@ export default function SplitResultPage() {
                         <span>{item.description}</span>
                         {item.splitters > 1 && (
                           <span className="text-xs text-gray-500">
-                            ({formatCurrency(item.originalAmount)} ÷ {item.splitters})
+                            ({formatCurrency(item.originalAmount)} ÷{" "}
+                            {item.splitters})
                           </span>
                         )}
                       </div>
@@ -134,7 +138,7 @@ export default function SplitResultPage() {
                     </div>
                   ))}
                 </div>
-                
+
                 <div className="mt-4 pt-4 border-t border-black/[.04] dark:border-white/[.04]">
                   <div className="flex justify-between">
                     <span>Subtotal</span>
@@ -142,8 +146,7 @@ export default function SplitResultPage() {
                       {formatCurrency(activeSplit.subtotal)}
                     </span>
                   </div>
-                  
-                  
+
                   {activeSplit.serviceCharge > 0 && (
                     <div className="flex justify-between mt-2">
                       <span>Service Charge</span>
@@ -152,7 +155,7 @@ export default function SplitResultPage() {
                       </span>
                     </div>
                   )}
-                  
+
                   <div className="flex justify-between mt-3 pt-3 border-t border-black/[.08] dark:border-white/[.08] font-bold">
                     <span>Total</span>
                     <span className="font-[family-name:var(--font-geist-mono)]">
@@ -163,12 +166,15 @@ export default function SplitResultPage() {
               </div>
             </div>
           )}
-          
+
           <div className="flex justify-between items-center mt-8">
-            <Link href="/split-receipt/items" className="text-blue-600 dark:text-blue-400 hover:underline">
+            <Link
+              href="/split-receipt/items"
+              className="text-blue-600 dark:text-blue-400 hover:underline"
+            >
               ← Back to items
             </Link>
-            
+
             <button
               onClick={handleStartOver}
               className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full transition-colors"
@@ -178,7 +184,7 @@ export default function SplitResultPage() {
           </div>
         </div>
       </main>
-      
+
       <footer className="w-full max-w-3xl mx-auto text-center text-sm text-gray-500">
         <p>Receiptly - Split bills easily</p>
       </footer>

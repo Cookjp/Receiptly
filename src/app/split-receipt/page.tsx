@@ -1,37 +1,44 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useReceipt } from '@/contexts/ReceiptContext';
-import Link from 'next/link';
-import ShareSessionButton from '@/components/ShareSessionButton';
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useReceipt } from "@/contexts/ReceiptContext";
+import Link from "next/link";
+import ShareSessionButton from "@/components/ShareSessionButton";
 
 export default function SplitReceiptPage() {
   const router = useRouter();
-  const { receipt, people, addPerson, removePerson, updatePerson } = useReceipt();
-  const [newPersonName, setNewPersonName] = useState('');
-  const [validationMessage, setValidationMessage] = useState('');
+  const {
+    receipt,
+    people,
+    addPerson,
+    removePerson,
+    updatePerson,
+    formatCurrency,
+  } = useReceipt();
+  const [newPersonName, setNewPersonName] = useState("");
+  const [validationMessage, setValidationMessage] = useState("");
 
   // Redirect to home if no receipt data
   useEffect(() => {
     if (!receipt) {
-      router.push('/');
+      router.push("/");
     }
   }, [receipt, router]);
 
   const handleAddPerson = () => {
     if (!newPersonName.trim()) {
-      setValidationMessage('Please enter a name');
+      setValidationMessage("Please enter a name");
       return;
     }
-    
+
     addPerson(newPersonName.trim());
-    setNewPersonName('');
-    setValidationMessage('');
+    setNewPersonName("");
+    setValidationMessage("");
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleAddPerson();
     }
   };
@@ -46,11 +53,11 @@ export default function SplitReceiptPage() {
 
   const handleContinue = () => {
     if (people.length === 0) {
-      setValidationMessage('Add at least one person to continue');
+      setValidationMessage("Add at least one person to continue");
       return;
     }
-    
-    router.push('/split-receipt/items');
+
+    router.push("/split-receipt/items");
   };
 
   if (!receipt) {
@@ -71,26 +78,40 @@ export default function SplitReceiptPage() {
           Add the people who will split this receipt
         </p>
       </header>
-      
+
       <main className="w-full max-w-2xl mx-auto my-8">
         <div className="bg-white dark:bg-black/[.3] p-6 rounded-lg border border-black/[.08] dark:border-white/[.08]">
-          <h2 className="text-lg font-semibold mb-4">{receipt.establishmentName && `Receipt from ${receipt.establishmentName}`}</h2>
-          
+          <h2 className="text-lg font-semibold mb-4">
+            {receipt.establishmentName &&
+              `Receipt from ${receipt.establishmentName}`}
+          </h2>
+
           <div className="mb-6">
-            <p className="text-sm text-gray-500 mb-2">Total Amount: <span className="font-[family-name:var(--font-geist-mono)] font-semibold text-black dark:text-white">${(receipt.total || 0).toFixed(2)}</span></p>
-            <p className="text-sm text-gray-500">{receipt.date && 'Date: ' + receipt.date}</p>
+            <p className="text-sm text-gray-500 mb-2">
+              Total Amount:{" "}
+              <span className="font-[family-name:var(--font-geist-mono)] font-semibold text-black dark:text-white">
+                {formatCurrency(receipt.total || 0)}
+              </span>
+            </p>
+            <p className="text-sm text-gray-500">
+              {receipt.date && "Date: " + receipt.date}
+            </p>
           </div>
-          
+
           <div className="mb-6">
-            <label className="block text-sm font-medium mb-2">Who&apos;s splitting this receipt?</label>
-            
+            <label className="block text-sm font-medium mb-2">
+              Who&apos;s splitting this receipt?
+            </label>
+
             <div className="space-y-2">
               {people.map((person) => (
                 <div key={person.id} className="flex items-center gap-2">
                   <input
                     type="text"
                     value={person.name}
-                    onChange={(e) => handleUpdatePerson(person.id, e.target.value)}
+                    onChange={(e) =>
+                      handleUpdatePerson(person.id, e.target.value)
+                    }
                     className="flex-grow border dark:border-gray-700 bg-transparent px-3 py-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500"
                     placeholder="Person's name"
                   />
@@ -99,7 +120,17 @@ export default function SplitReceiptPage() {
                     className="p-2 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"
                     aria-label="Remove person"
                   >
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      width="18"
+                      height="18"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
                       <path d="M18 6 6 18"></path>
                       <path d="m6 6 12 12"></path>
                     </svg>
@@ -107,7 +138,7 @@ export default function SplitReceiptPage() {
                 </div>
               ))}
             </div>
-            
+
             <div className="mt-4 flex items-stretch gap-2">
               <input
                 type="text"
@@ -124,12 +155,12 @@ export default function SplitReceiptPage() {
                 Add
               </button>
             </div>
-            
+
             {validationMessage && (
               <p className="mt-2 text-sm text-red-500">{validationMessage}</p>
             )}
           </div>
-          
+
           {people.length > 0 && (
             <div className="mt-6">
               <ShareSessionButton />
@@ -137,7 +168,10 @@ export default function SplitReceiptPage() {
           )}
 
           <div className="flex justify-between items-center mt-8">
-            <Link href="/receipt" className="text-blue-600 dark:text-blue-400 hover:underline">
+            <Link
+              href="/receipt"
+              className="text-blue-600 dark:text-blue-400 hover:underline"
+            >
               ← Back to scanning
             </Link>
 
@@ -147,7 +181,17 @@ export default function SplitReceiptPage() {
               disabled={people.length === 0}
             >
               <span>Continue to Items</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M5 12h14"></path>
                 <path d="m12 5 7 7-7 7"></path>
               </svg>
@@ -155,7 +199,7 @@ export default function SplitReceiptPage() {
           </div>
         </div>
       </main>
-      
+
       <footer className="w-full max-w-2xl mx-auto text-center text-sm text-gray-500">
         <p>Receiptly - Split bills easily</p>
       </footer>
