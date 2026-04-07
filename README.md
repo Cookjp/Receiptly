@@ -106,3 +106,15 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 📄 License
 
 This project is licensed under the MIT License – see the LICENSE file for details.
+
+
+### Deployment
+deployed to VPS
+manually running docker deployment.
+1. build locally.
+2. tag 
+3. push it
+4. ssh into server.
+5. pull it.
+6. docker stop + docker rm.
+7. docker run
