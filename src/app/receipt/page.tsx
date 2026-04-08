@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import ReceiptResults from "@/components/ReceiptResults";
 import { OcrServiceFactory } from "@/services/ocr/OcrServiceFactory";
@@ -13,6 +13,27 @@ export default function ReceiptPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const router = useRouter();
   const { receipt, setReceipt } = useReceipt();
+
+  const processImage = useCallback(async (imageData: string) => {
+    setIsProcessing(true);
+    try {
+      const ocrService = OcrServiceFactory.getOcrService();
+      const result = await ocrService.processImage(imageData);
+      console.log("result", result);
+      setOcrResult(result);
+
+      // Store the parsed receipt in context
+      if (result.parsedReceipt) {
+        setReceipt(result.parsedReceipt);
+      }
+    } catch (error) {
+      console.error("Error processing receipt:", error);
+      alert("Failed to process receipt. Please try again.");
+      router.push("/");
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [router, setReceipt]);
 
   useEffect(() => {
     // Always try to get the image from localStorage
@@ -37,28 +58,7 @@ export default function ReceiptPage() {
       // No image in localStorage and no receipt in context, redirect back home
       router.push("/");
     }
-  }, [router, receipt, ocrResult]);
-
-  const processImage = async (imageData: string) => {
-    setIsProcessing(true);
-    try {
-      const ocrService = OcrServiceFactory.getOcrService();
-      const result = await ocrService.processImage(imageData);
-      console.log("result", result);
-      setOcrResult(result);
-
-      // Store the parsed receipt in context
-      if (result.parsedReceipt) {
-        setReceipt(result.parsedReceipt);
-      }
-    } catch (error) {
-      console.error("Error processing receipt:", error);
-      alert("Failed to process receipt. Please try again.");
-      router.push("/");
-    } finally {
-      setIsProcessing(false);
-    }
-  };
+  }, [router, receipt, ocrResult, processImage]);
 
   const resetState = () => {
     localStorage.removeItem("receiptImage");

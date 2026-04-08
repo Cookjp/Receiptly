@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { OcrResult } from "../services/ocr/OcrService";
 import {
   ReceiptData,
@@ -116,11 +117,10 @@ const ReceiptResults: React.FC<ReceiptResultsProps> = ({
     return null;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleItemChange = (
     index: number,
     field: keyof LineItem,
-    value: any,
+    value: string | number,
   ) => {
     if (!editedReceipt) return;
 
@@ -132,7 +132,7 @@ const ReceiptResults: React.FC<ReceiptResultsProps> = ({
       field === "unitPrice" ||
       field === "totalPrice"
     ) {
-      const numValue = parseFloat(value);
+      const numValue = typeof value === "number" ? value : parseFloat(value);
       updatedItems[index] = {
         ...updatedItems[index],
         [field]: isNaN(numValue) ? 0 : numValue,
@@ -169,7 +169,7 @@ const ReceiptResults: React.FC<ReceiptResultsProps> = ({
     } else {
       updatedItems[index] = {
         ...updatedItems[index],
-        [field]: value,
+        [field]: String(value),
       };
     }
 
@@ -179,8 +179,7 @@ const ReceiptResults: React.FC<ReceiptResultsProps> = ({
     });
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const handleHeaderChange = (field: keyof ReceiptData, value: any) => {
+  const handleHeaderChange = (field: keyof ReceiptData, value: string | number) => {
     if (!editedReceipt) return;
 
     if (
@@ -188,7 +187,7 @@ const ReceiptResults: React.FC<ReceiptResultsProps> = ({
       field === "serviceCharge" ||
       field === "total"
     ) {
-      const numValue = parseFloat(value);
+      const numValue = typeof value === "number" ? value : parseFloat(value);
       setEditedReceipt({
         ...editedReceipt,
         [field]: isNaN(numValue) ? undefined : numValue,
@@ -196,7 +195,7 @@ const ReceiptResults: React.FC<ReceiptResultsProps> = ({
     } else {
       setEditedReceipt({
         ...editedReceipt,
-        [field]: value,
+        [field]: String(value),
       });
     }
   };
@@ -297,11 +296,9 @@ const ReceiptResults: React.FC<ReceiptResultsProps> = ({
     className = "",
     field = "",
   }: {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    value: any;
+    value: string | number | undefined;
     isEditing: boolean;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    onChange: (value: any) => void;
+    onChange: (value: string | number) => void;
     onEditStart: () => void;
     onEditEnd: () => void;
     isNumber?: boolean;
@@ -361,7 +358,7 @@ const ReceiptResults: React.FC<ReceiptResultsProps> = ({
         className={`cursor-pointer hover:bg-black/[.03] dark:hover:bg-white/[.03] px-2 py-1 rounded ${className} ${issue ? "text-yellow-600 dark:text-yellow-400" : ""}`}
         title={issue?.message}
       >
-        {isNumber && value !== undefined ? formatNumber(value) : value || "-"}
+        {isNumber && value !== undefined ? formatNumber(typeof value === "number" ? value : parseFloat(value)) : value || "-"}
         {issue && <span className="ml-1 text-yellow-500">⚠️</span>}
       </div>
     );
@@ -373,10 +370,14 @@ const ReceiptResults: React.FC<ReceiptResultsProps> = ({
         <div className="flex flex-col gap-2">
           <h3 className="text-lg font-semibold">Receipt Image</h3>
           <div className="relative border border-solid border-black/[.08] dark:border-white/[.145] rounded-lg overflow-hidden">
-            <img
+            <Image
               src={imagePreview}
               alt="Receipt"
-              className="w-full object-contain max-h-[400px]"
+              width={0}
+              height={0}
+              sizes="100vw"
+              className="w-full h-auto object-contain max-h-[400px]"
+              unoptimized
             />
           </div>
         </div>
