@@ -1,5 +1,7 @@
 # 🧾 Receiptly
 
+https://receiptly.cookjp.com
+
 Receiptly is a modern web application that helps you scan and split receipts easily. It uses OCR technology to extract text from receipt images, allows you to edit the extracted data, and provides a simple way to split expenses among multiple people.
 ## 🚀 Features
 
