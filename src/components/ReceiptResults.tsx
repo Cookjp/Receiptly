@@ -264,18 +264,6 @@ const ReceiptResults: React.FC<ReceiptResultsProps> = ({
     return value.toFixed(2);
   };
 
-  const fixSubtotalIssue = () => {
-    if (!editedReceipt) return;
-
-    const issue = validationIssues.find((i) => i.type === "subtotal_mismatch");
-    if (issue && issue.expected !== undefined) {
-      setEditedReceipt({
-        ...editedReceipt,
-        subtotal: issue.expected,
-      });
-    }
-  };
-
   const fixTotalIssue = () => {
     if (!editedReceipt) return;
 
@@ -413,22 +401,13 @@ const ReceiptResults: React.FC<ReceiptResultsProps> = ({
                 {validationIssues.map((issue, index) => (
                   <li key={index} className="flex items-center justify-between">
                     <span>{issue.message}</span>
-                    {issue.type === "subtotal_mismatch" &&
-                      issue.expected !== undefined && (
-                        <button
-                          onClick={fixSubtotalIssue}
-                          className="text-xs bg-yellow-100 dark:bg-yellow-800 hover:bg-yellow-200 dark:hover:bg-yellow-700 text-yellow-800 dark:text-yellow-200 px-2 py-1 rounded transition-colors"
-                        >
-                          Fix (set to {formatNumber(issue.expected)})
-                        </button>
-                      )}
                     {issue.type === "total_mismatch" &&
                       issue.expected !== undefined && (
                         <button
                           onClick={fixTotalIssue}
                           className="text-xs bg-yellow-100 dark:bg-yellow-800 hover:bg-yellow-200 dark:hover:bg-yellow-700 text-yellow-800 dark:text-yellow-200 px-2 py-1 rounded transition-colors"
                         >
-                          Fix (set to {formatNumber(issue.expected)})
+                          Set Total to {formatNumber(issue.expected)}
                         </button>
                       )}
                   </li>
@@ -544,21 +523,11 @@ const ReceiptResults: React.FC<ReceiptResultsProps> = ({
                 </tr>
                 <tr>
                   <td colSpan={3} className="py-2 px-4 text-right font-medium">
-                    Subtotal
+                    <span>Subtotal</span>
+                    <span className="text-xs text-gray-500 ml-1">(items sum)</span>
                   </td>
                   <td className="py-2 px-4 text-right">
-                    <EditableCell
-                      value={editedReceipt.subtotal}
-                      isEditing={isEditingHeader && editingField === "subtotal"}
-                      onChange={(value) =>
-                        handleHeaderChange("subtotal", value)
-                      }
-                      onEditStart={() => handleHeaderEditStart("subtotal")}
-                      onEditEnd={handleEditEnd}
-                      isNumber={true}
-                      className="text-right"
-                      field="subtotal"
-                    />
+                    {formatNumber(editedReceipt.subtotal)}
                   </td>
                   <td></td>
                 </tr>
