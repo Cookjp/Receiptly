@@ -1,5 +1,7 @@
 # 🧾 Receiptly
 
+https://receiptly.cookjp.com
+
 Receiptly is a modern web application that helps you scan and split receipts easily. It uses OCR technology to extract text from receipt images, allows you to edit the extracted data, and provides a simple way to split expenses among multiple people.
 ## 🚀 Features
 
@@ -106,3 +108,15 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 📄 License
 
 This project is licensed under the MIT License – see the LICENSE file for details.
+
+
+### Deployment
+deployed to VPS
+manually running docker deployment.
+1. build locally.
+2. tag 
+3. push it
+4. ssh into server.
+5. pull it.
+6. docker stop + docker rm.
+7. docker run

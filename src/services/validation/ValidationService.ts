@@ -12,38 +12,13 @@ export interface ValidationIssue {
 export class ValidationService {
   static validateReceipt(receipt: ReceiptData): ValidationIssue[] {
     const issues: ValidationIssue[] = [];
-    
-    // Check if line items sum up to subtotal
-    issues.push(...this.validateSubtotal(receipt));
-    
-    // Check if subtotal + tax + service charge = total
+
+    // Check if subtotal + service charge = total (subtotal is now always calculated from items)
     issues.push(...this.validateTotal(receipt));
-    
+
     // Check for missing required fields
     issues.push(...this.validateRequiredFields(receipt));
-    
-    return issues;
-  }
-  
-  private static validateSubtotal(receipt: ReceiptData): ValidationIssue[] {
-    const issues: ValidationIssue[] = [];
-    
-    if (receipt.subtotal !== undefined) {
-      const calculatedSubtotal = this.calculateSubtotal(receipt);
-      const tolerance = 0.01; // Allow for small rounding differences
-      
-      if (Math.abs(calculatedSubtotal - receipt.subtotal) > tolerance) {
-        issues.push({
-          type: 'subtotal_mismatch',
-          message: 'Line items total does not match subtotal',
-          severity: 'warning',
-          field: 'subtotal',
-          expected: calculatedSubtotal,
-          actual: receipt.subtotal
-        });
-      }
-    }
-    
+
     return issues;
   }
   
@@ -62,7 +37,7 @@ export class ValidationService {
       if (Math.abs(calculatedTotal - receipt.total) > tolerance) {
         issues.push({
           type: 'total_mismatch',
-          message: 'Subtotal + tax + service charge does not match total',
+          message: `Items sum (${subtotal.toFixed(2)}) + service charge (${serviceCharge.toFixed(2)}) = ${calculatedTotal.toFixed(2)}, but receipt total is ${receipt.total.toFixed(2)}`,
           severity: 'warning',
           field: 'total',
           expected: calculatedTotal,
@@ -109,9 +84,4 @@ export class ValidationService {
     return issues;
   }
   
-  private static calculateSubtotal(receipt: ReceiptData): number {
-    return receipt.items.reduce((sum, item) => {
-      return sum + (item.totalPrice || 0);
-    }, 0);
-  }
 }

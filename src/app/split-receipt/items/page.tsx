@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useReceipt } from '@/contexts/ReceiptContext';
-import { useSessionPolling } from '@/hooks/useSessionPolling';
-import SharedSessionBanner from '@/components/SharedSessionBanner';
-import Link from 'next/link';
+import React, { useState, useEffect, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useReceipt } from "@/contexts/ReceiptContext";
+import { useSessionPolling } from "@/hooks/useSessionPolling";
+import SharedSessionBanner from "@/components/SharedSessionBanner";
+import Link from "next/link";
 
 function SplitItemsContent() {
   const router = useRouter();
@@ -19,8 +19,9 @@ function SplitItemsContent() {
     isSharedSession,
     joinSharedSession,
     updateSharedAttributions,
+    formatCurrency,
   } = useReceipt();
-  const [validationMessage, setValidationMessage] = useState('');
+  const [validationMessage, setValidationMessage] = useState("");
   const [isJoining, setIsJoining] = useState(false);
   const [joinError, setJoinError] = useState<string | null>(null);
 
@@ -29,12 +30,12 @@ function SplitItemsContent() {
 
   // Check for session parameter and join if present
   useEffect(() => {
-    const sessionId = searchParams.get('session');
+    const sessionId = searchParams.get("session");
     if (sessionId && !isSharedSession && !isJoining) {
       setIsJoining(true);
       joinSharedSession(sessionId)
         .catch((err) => {
-          setJoinError(err.message || 'Failed to join session');
+          setJoinError(err.message || "Failed to join session");
         })
         .finally(() => {
           setIsJoining(false);
@@ -44,11 +45,11 @@ function SplitItemsContent() {
 
   // Redirect to home if no receipt data (only if not joining a session)
   useEffect(() => {
-    if (!isJoining && !searchParams.get('session')) {
+    if (!isJoining && !searchParams.get("session")) {
       if (!receipt) {
-        router.push('/');
+        router.push("/");
       } else if (people.length === 0) {
-        router.push('/split-receipt');
+        router.push("/split-receipt");
       }
     }
   }, [receipt, people, router, isJoining, searchParams]);
@@ -57,7 +58,7 @@ function SplitItemsContent() {
     if (!receipt) return;
 
     // Attribute all items to all people
-    const allPersonIds = people.map(p => p.id);
+    const allPersonIds = people.map((p) => p.id);
     for (let index = 0; index < receipt.items.length; index++) {
       if (isSharedSession) {
         await updateSharedAttributions(index, allPersonIds);
@@ -73,7 +74,7 @@ function SplitItemsContent() {
 
     if (currentAttribution.includes(personId)) {
       // Remove this person
-      newAttribution = currentAttribution.filter(id => id !== personId);
+      newAttribution = currentAttribution.filter((id) => id !== personId);
     } else {
       // Add this person
       newAttribution = [...currentAttribution, personId];
@@ -88,16 +89,20 @@ function SplitItemsContent() {
 
   const handleContinue = () => {
     if (!receipt) return;
-    
+
     // Check if all items are attributed
-    const unattributedItems = receipt.items.filter((_, index) => !isItemAttributed(index));
-    
+    const unattributedItems = receipt.items.filter(
+      (_, index) => !isItemAttributed(index),
+    );
+
     if (unattributedItems.length > 0) {
-      setValidationMessage(`${unattributedItems.length} item(s) haven't been assigned to anyone`);
+      setValidationMessage(
+        `${unattributedItems.length} item(s) haven't been assigned to anyone`,
+      );
       return;
     }
-    
-    router.push('/split-receipt/result');
+
+    router.push("/split-receipt/result");
   };
 
   if (isJoining) {
@@ -147,7 +152,7 @@ function SplitItemsContent() {
           Select who&apos;s paying for each item
         </p>
       </header>
-      
+
       <main className="w-full max-w-3xl mx-auto my-8">
         {isSharedSession && (
           <div className="mb-4">
@@ -156,8 +161,10 @@ function SplitItemsContent() {
         )}
         <div className="bg-white dark:bg-black/[.3] p-6 rounded-lg border border-black/[.08] dark:border-white/[.08]">
           <div className="flex justify-between items-center mb-4">
-            <h2 className="text-lg font-semibold">Items from {receipt.establishmentName || 'Unknown'}</h2>
-            
+            <h2 className="text-lg font-semibold">
+              Items from {receipt.establishmentName || "Unknown"}
+            </h2>
+
             <button
               onClick={handleAttributeAll}
               className="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
@@ -165,15 +172,18 @@ function SplitItemsContent() {
               Split all items equally
             </button>
           </div>
-          
+
           <div className="overflow-x-auto">
             <table className="w-full border-collapse font-[family-name:var(--font-geist-mono)] text-sm">
               <thead>
                 <tr className="border-b border-black/[.08] dark:border-white/[.145]">
                   <th className="py-3 px-4 text-left">Item</th>
                   <th className="py-3 px-4 text-right">Price</th>
-                  {people.map(person => (
-                    <th key={person.id} className="py-3 px-2 text-center whitespace-nowrap">
+                  {people.map((person) => (
+                    <th
+                      key={person.id}
+                      className="py-3 px-2 text-center whitespace-nowrap"
+                    >
                       {person.name}
                     </th>
                   ))}
@@ -183,26 +193,35 @@ function SplitItemsContent() {
                 {receipt.items.map((item, index) => {
                   const attributedTo = getItemAttribution(index);
                   return (
-                    <tr 
-                      key={index} 
-                      className={`border-b border-black/[.04] dark:border-white/[.07] ${!isItemAttributed(index) ? 'bg-red-50 dark:bg-red-900/10' : ''}`}
+                    <tr
+                      key={index}
+                      className={`border-b border-black/[.04] dark:border-white/[.07] ${!isItemAttributed(index) ? "bg-red-50 dark:bg-red-900/10" : ""}`}
                     >
                       <td className="py-3 px-4">{item.description}</td>
-                      <td className="py-3 px-4 text-right">${(item.totalPrice || 0).toFixed(2)}</td>
-                      
-                      {people.map(person => (
+                      <td className="py-3 px-4 text-right">
+                        {formatCurrency(item.totalPrice || 0)}
+                      </td>
+
+                      {people.map((person) => (
                         <td key={person.id} className="py-3 px-2 text-center">
                           <button
                             className={`w-6 h-6 rounded-md transition-colors ${
                               attributedTo.includes(person.id)
-                                ? 'bg-blue-600 text-white'
-                                : 'bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600'
+                                ? "bg-blue-600 text-white"
+                                : "bg-gray-100 dark:bg-gray-800 text-gray-400 dark:text-gray-600"
                             }`}
                             onClick={() => handleTogglePerson(index, person.id)}
                             aria-label={`Toggle ${person.name} for ${item.description}`}
                           >
                             {attributedTo.includes(person.id) ? (
-                              <svg viewBox="0 0 24 24" width="14" height="14" className="mx-auto" stroke="currentColor" fill="none">
+                              <svg
+                                viewBox="0 0 24 24"
+                                width="14"
+                                height="14"
+                                className="mx-auto"
+                                stroke="currentColor"
+                                fill="none"
+                              >
                                 <polyline points="20 6 9 17 4 12"></polyline>
                               </svg>
                             ) : null}
@@ -216,28 +235,43 @@ function SplitItemsContent() {
               <tfoot>
                 <tr className="border-t-2 border-black/[.08] dark:border-white/[.145] font-medium">
                   <td className="py-3 px-4">Total</td>
-                  <td className="py-3 px-4 text-right">${(receipt.total || 0).toFixed(2)}</td>
+                  <td className="py-3 px-4 text-right">
+                    {formatCurrency(receipt.total || 0)}
+                  </td>
                   <td colSpan={people.length}></td>
                 </tr>
               </tfoot>
             </table>
           </div>
-          
+
           {validationMessage && (
             <p className="mt-4 text-sm text-red-500">{validationMessage}</p>
           )}
-          
+
           <div className="flex justify-between items-center mt-8">
-            <Link href="/split-receipt" className="text-blue-600 dark:text-blue-400 hover:underline">
+            <Link
+              href="/split-receipt"
+              className="text-blue-600 dark:text-blue-400 hover:underline"
+            >
               ← Back to people
             </Link>
-            
+
             <button
               onClick={handleContinue}
               className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-full transition-colors flex items-center gap-2"
             >
               <span>Calculate Split</span>
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="20"
+                height="20"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
                 <path d="M5 12h14"></path>
                 <path d="m12 5 7 7-7 7"></path>
               </svg>
@@ -245,7 +279,7 @@ function SplitItemsContent() {
           </div>
         </div>
       </main>
-      
+
       <footer className="w-full max-w-3xl mx-auto text-center text-sm text-gray-500">
         <p>Receiptly - Split bills easily</p>
       </footer>
